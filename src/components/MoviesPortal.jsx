@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { fetchMovies } from "../api/FetchMovies";
 import ErrorAlert from "./ErrorAlert";
-import MovieDetail from "./MovieDetail";
+import MovieDetails from "./MovieDetails";
 
 function MoviesPortal() {
     const [searchInputText, setSearchInputText] = useState('')
@@ -31,7 +31,7 @@ function MoviesPortal() {
             {error && <ErrorAlert error={error} searchTerm={enteredSearchText}/>}
             {movies.length > 0 &&  <p className='text-light'>Showing {movies.length} Movies for '{enteredSearchText}'</p>}
             {movies.map((movie) => (
-                <MovieDetail key={movie.imdbID} movie={movie} />
+                <MovieDetails key={movie.imdbID} movie={movie} />
             ))}
         </>
     );
