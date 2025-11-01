@@ -1,36 +1,40 @@
 import { useState } from "react";
-import FetchMovies from "../api/FetchMovies";
+import { fetchMovies } from "../api/FetchMovies";
+import ErrorAlert from "./ErrorAlert";
+import MovieDetail from "./MovieDetail";
 
-
-const MoviesPortal = () => {
+function MoviesPortal() {
     const [searchInputText, setSearchInputText] = useState('')
     const [enteredSearchText, setEnteredSearchText] = useState('')
     const [movies, setMovies] = useState([])
     const [error, setError] = useState(null)
 
-    const onSerchTextEnter = (e)=>{
-        e.preventDefault()
-        FetchMovies(searchInputText, setMovies, setError)
-        setEnteredSearchText(enteredSearchText)
-    }
-  return (
-    <>
-    <div className="row">
-      <div className="col-md-12">
-        <form onSubmit={onSerchTextEnter}>
-          <input
-            type="text"
-            placeholder="Search Movie"
-            className="form-control"
-            value={searchInputText}
-            onChange={(e)=> setSearchInputText(e.target.value)}
-          />
-        </form>
-      </div>
-    </div>
-    {enteredSearchText}
-    </>
-  );
-};
+    const onSearchTextEnter = (e) => {
+        e.preventDefault();
+        fetchMovies(searchInputText, setMovies, setError, () => setEnteredSearchText(searchInputText))
+    };
+
+    return (
+        <>
+            <div className="row">
+                <div className="col-md-12">
+                    <form onSubmit={onSearchTextEnter}>
+                        <input
+                            type="text" placeholder="Search Movie" className="form-control"
+                            value={searchInputText}
+                            onChange={(e) => setSearchInputText(e.target.value)}
+                        />
+                    </form>
+                </div>
+            </div>
+            <br/>
+            {error && <ErrorAlert error={error} searchTerm={enteredSearchText}/>}
+            {movies.length > 0 &&  <p className='text-light'>Showing {movies.length} Movies for '{enteredSearchText}'</p>}
+            {movies.map((movie) => (
+                <MovieDetail key={movie.imdbID} movie={movie} />
+            ))}
+        </>
+    );
+}
 
 export default MoviesPortal;
