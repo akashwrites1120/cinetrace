@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { fetchMovies } from "../api/FetchMovies";
 import ErrorAlert from "./ErrorAlert";
 import MovieDetails from "./MovieDetails";
@@ -8,11 +8,57 @@ function MoviesPortal() {
   const [enteredSearchText, setEnteredSearchText] = useState("");
   const [movies, setMovies] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Fetch random movies on initial load
+    const randomTerms = [
+      "Marvel",
+      "Star Wars",
+      "Harry Potter",
+      "Lord of the Rings",
+      "Avengers",
+      "Batman",
+      "Spider-Man",
+    ];
+    const randomTerm =
+      randomTerms[Math.floor(Math.random() * randomTerms.length)];
+    fetchMovies(
+      randomTerm,
+      (data) => {
+        setMovies(data);
+        setLoading(false);
+      },
+      (err) => {
+        setError(err);
+        setLoading(false);
+      },
+      () => {}
+    );
+  }, []);
 
   const onSearchTextEnter = (e) => {
     e.preventDefault();
-    fetchMovies(searchInputText, setMovies, setError, () =>
-      setEnteredSearchText(searchInputText)
+    if (!searchInputText.trim()) return;
+
+    setLoading(true);
+    setMovies([]);
+    setError(null);
+
+    fetchMovies(
+      searchInputText,
+      (data) => {
+        setMovies(data);
+        setLoading(false);
+      },
+      (err) => {
+        setError(err);
+        setLoading(false);
+      },
+      () => {
+        setEnteredSearchText(searchInputText);
+        setLoading(false);
+      }
     );
   };
 
@@ -64,15 +110,50 @@ function MoviesPortal() {
         </form>
       </div>
 
-      {error && <ErrorAlert error={error} searchTerm={enteredSearchText} />}
+      {loading && (
+        <div style={{ textAlign: "center", padding: "4rem" }}>
+          <div
+            className="spinner-border text-primary"
+            role="status"
+            style={{
+              width: "3rem",
+              height: "3rem",
+              border: "0.25em solid currentColor",
+              borderRightColor: "transparent",
+              borderRadius: "50%",
+              animation: "spinner-border .75s linear infinite",
+            }}
+          >
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <style>{`
+            @keyframes spinner-border {
+              to { transform: rotate(360deg); }
+            }
+          `}</style>
+        </div>
+      )}
 
-      {movies.length > 0 && (
+      {!loading && error && (
+        <ErrorAlert
+          error={error}
+          searchTerm={enteredSearchText || "Random Selection"}
+        />
+      )}
+
+      {!loading && movies.length > 0 && (
         <>
           <p className="text-muted" style={{ marginBottom: "1.5rem" }}>
-            Found {movies.length} results for{" "}
-            <span style={{ color: "var(--text-color)", fontWeight: "600" }}>
-              "{enteredSearchText}"
-            </span>
+            {enteredSearchText ? (
+              <>
+                Found {movies.length} results for{" "}
+                <span style={{ color: "var(--text-color)", fontWeight: "600" }}>
+                  "{enteredSearchText}"
+                </span>
+              </>
+            ) : (
+              <>Recommended Movies</>
+            )}
           </p>
           <div className="movie-grid">
             {movies.map((movie) => (
@@ -82,7 +163,7 @@ function MoviesPortal() {
         </>
       )}
 
-      {movies.length === 0 && !error && (
+      {!loading && movies.length === 0 && !error && (
         <div
           style={{
             textAlign: "center",
@@ -90,7 +171,7 @@ function MoviesPortal() {
             marginTop: "4rem",
           }}
         >
-          <p>Start by searching for a movie title above.</p>
+          <p>No movies found. Try searching for something else.</p>
         </div>
       )}
     </div>

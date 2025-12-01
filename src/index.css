@@ -41,9 +41,9 @@ a:hover {
 
 /* Utilities */
 .container {
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 2rem;
 }
 
 .row {
@@ -63,6 +63,12 @@ a:hover {
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 2rem;
   padding: 2rem 0;
+}
+
+@media (min-width: 1200px) {
+  .movie-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
 }
 
 /* Form Styles */

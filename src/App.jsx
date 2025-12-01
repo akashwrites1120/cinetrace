@@ -1,15 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import Header from "./components/Header";
 import MoviesPortal from "./components/MoviesPortal";
+import TrendingMovies from "./components/TrendingMovies";
 
 const App = () => {
+  const [activeTab, setActiveTab] = useState("home");
+
   return (
     <div
       style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
     >
-      <Header />
+      <Header activeTab={activeTab} setActiveTab={setActiveTab} />
       <main className="container" style={{ flex: 1 }}>
-        <MoviesPortal />
+        {activeTab === "home" && <MoviesPortal />}
+        {activeTab === "trending" && <TrendingMovies />}
       </main>
       <footer
         style={{

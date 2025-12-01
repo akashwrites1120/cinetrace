@@ -27,7 +27,7 @@ const MovieDetails = ({ movie }) => {
       }}
     >
       <div
-        style={{ position: "relative", paddingTop: "150%", overflow: "hidden" }}
+        style={{ position: "relative", paddingTop: "140%", overflow: "hidden" }}
       >
         <img
           src={
@@ -48,7 +48,7 @@ const MovieDetails = ({ movie }) => {
       </div>
       <div
         style={{
-          padding: "1.5rem",
+          padding: "1rem",
           flex: 1,
           display: "flex",
           flexDirection: "column",
@@ -56,8 +56,8 @@ const MovieDetails = ({ movie }) => {
       >
         <h3
           style={{
-            fontSize: "1.1rem",
-            marginBottom: "0.5rem",
+            fontSize: "1rem",
+            marginBottom: "0.25rem",
             lineHeight: "1.4",
           }}
         >
@@ -66,8 +66,8 @@ const MovieDetails = ({ movie }) => {
         <p
           style={{
             color: "var(--text-secondary)",
-            fontSize: "0.9rem",
-            marginBottom: "1rem",
+            fontSize: "0.85rem",
+            marginBottom: "0.5rem",
           }}
         >
           {movie.Year}
@@ -77,8 +77,8 @@ const MovieDetails = ({ movie }) => {
           style={{
             marginTop: "auto",
             display: "flex",
-            gap: "1rem",
-            fontSize: "0.9rem",
+            gap: "0.75rem",
+            fontSize: "0.85rem",
           }}
         >
           <a
