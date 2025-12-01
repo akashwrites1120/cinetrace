@@ -111,24 +111,28 @@ function MoviesPortal() {
       </div>
 
       {loading && (
-        <div style={{ textAlign: "center", padding: "4rem" }}>
+        <div
+          style={{
+            textAlign: "center",
+            padding: "4rem",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
           <div
-            className="spinner-border text-primary"
-            role="status"
             style={{
               width: "3rem",
               height: "3rem",
-              border: "0.25em solid currentColor",
-              borderRightColor: "transparent",
+              border: "4px solid rgba(99, 102, 241, 0.3)",
+              borderTop: "4px solid var(--primary-color)",
               borderRadius: "50%",
-              animation: "spinner-border .75s linear infinite",
+              animation: "spin 1s linear infinite",
             }}
-          >
-            <span className="visually-hidden">Loading...</span>
-          </div>
+          ></div>
           <style>{`
-            @keyframes spinner-border {
-              to { transform: rotate(360deg); }
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
             }
           `}</style>
         </div>

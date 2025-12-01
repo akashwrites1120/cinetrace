@@ -43,11 +43,27 @@ function TrendingMovies() {
         <div
           style={{
             textAlign: "center",
-            color: "var(--text-secondary)",
-            padding: "2rem",
+            padding: "4rem",
+            display: "flex",
+            justifyContent: "center",
           }}
         >
-          Loading trending movies...
+          <div
+            style={{
+              width: "3rem",
+              height: "3rem",
+              border: "4px solid rgba(99, 102, 241, 0.3)",
+              borderTop: "4px solid var(--primary-color)",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite",
+            }}
+          ></div>
+          <style>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
         </div>
       )}
 
