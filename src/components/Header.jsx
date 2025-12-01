@@ -56,7 +56,7 @@ const Header = ({ activeTab, setActiveTab }) => {
             gap: "0.5rem",
           }}
         >
-          <span style={{ color: "var(--primary-color)" }}>Cine</span>Tag
+          <span style={{ color: "var(--primary-color)" }}>Cine</span>Trace
         </a>
         <nav>
           <div style={{ display: "flex", gap: "1rem" }}>

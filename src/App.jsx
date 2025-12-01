@@ -25,9 +25,9 @@ const App = () => {
         }}
       >
         <p>
-          &copy; {new Date().getFullYear()} CineTag.{" "}
+          &copy; {new Date().getFullYear()} CineTrace.{" "}
           <a
-            href="https://github.com/akashwrites1120/cinetag"
+            href="https://github.com/akashwrites1120/cinetrace"
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: "var(--primary-color)", textDecoration: "none" }}

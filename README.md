@@ -1,6 +1,6 @@
-# CineTag
+# CineTrace
 
-CineTag is a modern, movie discovery application built with React and Vite. It allows users to search for movies, view details, and explore trending titles with a sleek, responsive interface.
+CineTrace is a modern, movie discovery application built with React and Vite. It allows users to search for movies, view details, and explore trending titles with a sleek, responsive interface.
 
 ## Features
 
@@ -21,7 +21,7 @@ CineTag is a modern, movie discovery application built with React and Vite. It a
 
 1.  Clone the repository:
     ```bash
-    git clone https://github.com/yourusername/cinetag.git
+    git clone https://github.com/yourusername/cinetrace.git
     ```
 2.  Install dependencies:
     ```bash

@@ -6,7 +6,7 @@ export const fetchMovies = async (
 ) => {
   try {
     const response = await fetch(
-      `http://www.omdbapi.com/?s=${searchText}&apikey=${
+      `https://www.omdbapi.com/?s=${searchText}&apikey=${
         import.meta.env.VITE_OMDB_API_KEY
       }&type=movie`
     );
@@ -70,7 +70,7 @@ export const fetchTrendingMovies = async (
 export const fetchMovieDetails = async (id, errorCallback) => {
   try {
     const response = await fetch(
-      `http://www.omdbapi.com/?i=${id}&plot=full&apikey=${
+      `https://www.omdbapi.com/?i=${id}&plot=full&apikey=${
         import.meta.env.VITE_OMDB_API_KEY
       }`
     );
