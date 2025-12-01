@@ -1,6 +1,6 @@
 # CineTag
 
-CineTag is a modern, premium movie discovery application built with React and Vite. It allows users to search for movies, view details, and explore trending titles with a sleek, responsive interface.
+CineTag is a modern, movie discovery application built with React and Vite. It allows users to search for movies, view details, and explore trending titles with a sleek, responsive interface.
 
 ## Features
 
