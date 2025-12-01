@@ -1,16 +1,50 @@
-# React + Vite
+# CineTag
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+CineTag is a modern, premium movie discovery application built with React and Vite. It allows users to search for movies, view details, and explore trending titles with a sleek, responsive interface.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Search Movies**: Find movies by title using the OMDb API.
+- **Trending Movies**: Discover popular movies in the "Trending" tab.
+- **Premium UI**: A dark-themed, glassmorphic design with smooth animations and responsive grid layout.
+- **Responsive**: Optimized for desktop, tablet, and mobile devices.
+- **Interactive**: Hover effects, loading states, and seamless navigation.
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Frontend**: React, Vite
+- **Styling**: Vanilla CSS (Custom Properties, Flexbox, Grid)
+- **API**: OMDb API
+- **Deployment**: Vercel (Ready)
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/yourusername/cinetag.git
+    ```
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+3.  Create a `.env` file in the root directory and add your OMDb API key:
+    ```env
+    VITE_OMDB_API_KEY=your_api_key_here
+    ```
+4.  Start the development server:
+    ```bash
+    npm run dev
+    ```
+
+## Deployment
+
+This project is configured for easy deployment on Vercel.
+
+1.  Push your code to GitHub.
+2.  Import the project into Vercel.
+3.  Add the `VITE_OMDB_API_KEY` environment variable in the Vercel dashboard.
+4.  Deploy!
+
+## License
+
+MIT
