@@ -1,21 +1,6 @@
 import React from "react";
 
 const Header = ({ activeTab, setActiveTab }) => {
-  const buttonStyle = (tabName) => ({
-    color:
-      activeTab === tabName ? "var(--text-color)" : "var(--text-secondary)",
-    backgroundColor:
-      activeTab === tabName ? "var(--primary-color)" : "transparent",
-    fontWeight: "500",
-    cursor: "pointer",
-    transition: "all 0.2s",
-    padding: "0.5rem 1.5rem",
-    borderRadius: "50px",
-    border: "none",
-    textDecoration: "none",
-    display: "inline-block",
-  });
-
   const handleLogoClick = (e) => {
     e.preventDefault();
     setActiveTab("home");
@@ -25,70 +10,36 @@ const Header = ({ activeTab, setActiveTab }) => {
   };
 
   return (
-    <header
-      style={{
-        padding: "1rem 0",
-        borderBottom: "1px solid var(--border-color)",
-        backgroundColor: "rgba(11, 14, 20, 0.8)",
-        backdropFilter: "blur(10px)",
-        position: "sticky",
-        top: 0,
-        zIndex: 100,
-      }}
-    >
-      <div
-        className="container"
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
+    <header className="sticky top-0 z-50 py-4 border-b border-gray-700 bg-gray-900/80 backdrop-blur-md">
+      <div className="container mx-auto px-4 flex justify-between items-center max-sm:flex-col max-sm:gap-4">
         <a
           href="/"
           onClick={handleLogoClick}
-          style={{
-            fontSize: "1.5rem",
-            fontWeight: "700",
-            color: "var(--text-color)",
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-          }}
+          className="flex items-center gap-2 text-2xl font-bold text-white hover:opacity-90 transition-opacity"
         >
-          <span style={{ color: "var(--primary-color)" }}>Cine</span>Trace
+          <span className="text-indigo-400">Cine</span>Trace
         </a>
-        <nav>
-          <div style={{ display: "flex", gap: "1rem" }}>
-            <button
-              onClick={() => setActiveTab("home")}
-              style={buttonStyle("home")}
-              onMouseEnter={(e) => {
-                if (activeTab !== "home")
-                  e.currentTarget.style.color = "var(--text-color)";
-              }}
-              onMouseLeave={(e) => {
-                if (activeTab !== "home")
-                  e.currentTarget.style.color = "var(--text-secondary)";
-              }}
-            >
-              Home
-            </button>
-            <button
-              onClick={() => setActiveTab("trending")}
-              style={buttonStyle("trending")}
-              onMouseEnter={(e) => {
-                if (activeTab !== "trending")
-                  e.currentTarget.style.color = "var(--text-color)";
-              }}
-              onMouseLeave={(e) => {
-                if (activeTab !== "trending")
-                  e.currentTarget.style.color = "var(--text-secondary)";
-              }}
-            >
-              Trending
-            </button>
-          </div>
+        <nav className="flex gap-4 max-sm:w-full max-sm:justify-center max-sm:bg-white/5 max-sm:p-1 max-sm:rounded-full">
+          <button
+            onClick={() => setActiveTab("home")}
+            className={`px-6 py-2 rounded-full font-medium transition-all duration-200 max-sm:flex-1 max-sm:text-center max-sm:text-sm ${
+              activeTab === "home"
+                ? "bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.3)]"
+                : "text-gray-400 hover:text-white hover:bg-white/5"
+            }`}
+          >
+            Home
+          </button>
+          <button
+            onClick={() => setActiveTab("trending")}
+            className={`px-6 py-2 rounded-full font-medium transition-all duration-200 max-sm:flex-1 max-sm:text-center max-sm:text-sm ${
+              activeTab === "trending"
+                ? "bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.3)]"
+                : "text-gray-400 hover:text-white hover:bg-white/5"
+            }`}
+          >
+            Trending
+          </button>
         </nav>
       </div>
     </header>

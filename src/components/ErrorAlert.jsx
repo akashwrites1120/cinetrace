@@ -2,17 +2,7 @@ import React from "react";
 
 const ErrorAlert = ({ error, searchTerm }) => {
   return (
-    <div
-      style={{
-        backgroundColor: "rgba(239, 68, 68, 0.1)",
-        border: "1px solid rgba(239, 68, 68, 0.2)",
-        color: "#FCA5A5",
-        padding: "1rem",
-        borderRadius: "var(--radius)",
-        marginBottom: "2rem",
-        textAlign: "center",
-      }}
-    >
+    <div className="bg-red-500/10 border border-red-500/20 text-red-300 p-4 rounded-lg mb-8 text-center">
       <strong>Oh snap!</strong> '{searchTerm}' resulted in '{error}' error
     </div>
   );

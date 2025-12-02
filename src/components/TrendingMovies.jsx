@@ -22,55 +22,22 @@ function TrendingMovies() {
   }, []);
 
   return (
-    <div style={{ minHeight: "80vh", paddingBottom: "4rem" }}>
-      <div
-        style={{
-          textAlign: "center",
-          padding: "4rem 0",
-          maxWidth: "600px",
-          margin: "0 auto",
-        }}
-      >
-        <h1 style={{ marginBottom: "1rem", fontSize: "2.5rem" }}>
-          Trending Now
-        </h1>
-        <p style={{ color: "var(--text-secondary)" }}>
-          Top picks for you this week
-        </p>
+    <div className="min-h-[80vh] pb-16">
+      <div className="text-center py-16 max-w-2xl mx-auto px-4">
+        <h1 className="mb-4 text-4xl font-bold">Trending Now</h1>
+        <p className="text-gray-400">Top picks for you this week</p>
       </div>
 
       {loading && (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "4rem",
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
-          <div
-            style={{
-              width: "3rem",
-              height: "3rem",
-              border: "4px solid rgba(99, 102, 241, 0.3)",
-              borderTop: "4px solid var(--primary-color)",
-              borderRadius: "50%",
-              animation: "spin 1s linear infinite",
-            }}
-          ></div>
-          <style>{`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}</style>
+        <div className="text-center py-16 flex justify-center">
+          <div className="w-12 h-12 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
         </div>
       )}
 
       {error && <ErrorAlert error={error} searchTerm="Trending" />}
 
       {!loading && movies.length > 0 && (
-        <div className="movie-grid">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 px-4">
           {movies.map((movie) => (
             <MovieDetails key={movie.imdbID} movie={movie} />
           ))}

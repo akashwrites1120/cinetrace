@@ -63,27 +63,24 @@ function MoviesPortal() {
   };
 
   return (
-    <div style={{ minHeight: "80vh", paddingBottom: "4rem" }}>
-      <div
-        style={{
-          textAlign: "center",
-          padding: "4rem 0",
-          maxWidth: "600px",
-          margin: "0 auto",
-        }}
-      >
-        <h1 style={{ marginBottom: "1.5rem", fontSize: "2.5rem" }}>
-          Find your next favorite movie
+    <div className="min-h-[80vh] pb-16">
+      <div className="text-center py-16 max-w-2xl mx-auto px-4">
+        <h1 className="mb-6 text-4xl font-bold">
+          Find Your Next Favorite Movie
         </h1>
-        <form onSubmit={onSearchTextEnter}>
-          <div style={{ position: "relative" }}>
+        <div>
+          <div className="relative">
             <input
               type="text"
               placeholder="Search for movies..."
-              className="form-control"
+              className="w-full px-4 py-3 pl-12 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               value={searchInputText}
               onChange={(e) => setSearchInputText(e.target.value)}
-              style={{ paddingLeft: "3rem" }}
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  onSearchTextEnter(e);
+                }
+              }}
             />
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -95,46 +92,18 @@ function MoviesPortal() {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              style={{
-                position: "absolute",
-                left: "1rem",
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "var(--text-secondary)",
-              }}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
             >
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
           </div>
-        </form>
+        </div>
       </div>
 
       {loading && (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "4rem",
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
-          <div
-            style={{
-              width: "3rem",
-              height: "3rem",
-              border: "4px solid rgba(99, 102, 241, 0.3)",
-              borderTop: "4px solid var(--primary-color)",
-              borderRadius: "50%",
-              animation: "spin 1s linear infinite",
-            }}
-          ></div>
-          <style>{`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}</style>
+        <div className="text-center py-16 flex justify-center">
+          <div className="w-12 h-12 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
         </div>
       )}
 
@@ -147,11 +116,11 @@ function MoviesPortal() {
 
       {!loading && movies.length > 0 && (
         <>
-          <p className="text-muted" style={{ marginBottom: "1.5rem" }}>
+          <p className="text-gray-400 mb-6 px-4">
             {enteredSearchText ? (
               <>
                 Found {movies.length} results for{" "}
-                <span style={{ color: "var(--text-color)", fontWeight: "600" }}>
+                <span className="text-white font-semibold">
                   "{enteredSearchText}"
                 </span>
               </>
@@ -159,7 +128,7 @@ function MoviesPortal() {
               <>Recommended Movies</>
             )}
           </p>
-          <div className="movie-grid">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 px-4">
             {movies.map((movie) => (
               <MovieDetails key={movie.imdbID} movie={movie} />
             ))}
@@ -168,13 +137,7 @@ function MoviesPortal() {
       )}
 
       {!loading && movies.length === 0 && !error && (
-        <div
-          style={{
-            textAlign: "center",
-            color: "var(--text-secondary)",
-            marginTop: "4rem",
-          }}
-        >
+        <div className="text-center text-gray-400 mt-16">
           <p>No movies found. Try searching for something else.</p>
         </div>
       )}
