@@ -11,30 +11,58 @@ function MoviesPortal() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch random movies on initial load
-    const randomTerms = [
-      "Marvel",
-      "Star Wars",
-      "Harry Potter",
-      "Lord of the Rings",
-      "Avengers",
-      "Batman",
-      "Spider-Man",
+    // Fetch multiple different movies on initial load
+    const searchTerms = [
+      "Action",
+      "Comedy",
+      "Drama",
+      "Thriller",
+      "Adventure",
+      "Animation",
+      "Romance",
+      "Horror"
     ];
-    const randomTerm =
-      randomTerms[Math.floor(Math.random() * randomTerms.length)];
-    fetchMovies(
-      randomTerm,
-      (data) => {
-        setMovies(data);
-        setLoading(false);
-      },
-      (err) => {
-        setError(err);
-        setLoading(false);
-      },
-      () => {}
-    );
+    
+    setLoading(true);
+    let allMovies = [];
+    let completedRequests = 0;
+    let hasError = false;
+
+    // Shuffle and pick 4-5 random genres
+    const shuffledTerms = searchTerms.sort(() => Math.random() - 0.5);
+    const selectedTerms = shuffledTerms.slice(0, 5);
+
+    selectedTerms.forEach((term) => {
+      fetchMovies(
+        term,
+        (data) => {
+          // Get 2 random movies from each search result
+          const randomMovies = data
+            .sort(() => Math.random() - 0.5)
+            .slice(0, 2);
+          allMovies = [...allMovies, ...randomMovies];
+          completedRequests++;
+
+          if (completedRequests === selectedTerms.length) {
+            // Remove duplicates based on imdbID and shuffle
+            const uniqueMovies = Array.from(
+              new Map(allMovies.map(movie => [movie.imdbID, movie])).values()
+            ).sort(() => Math.random() - 0.5);
+            
+            setMovies(uniqueMovies);
+            setLoading(false);
+          }
+        },
+        (err) => {
+          if (!hasError) {
+            hasError = true;
+            setError(err);
+            setLoading(false);
+          }
+        },
+        () => {}
+      );
+    });
   }, []);
 
   const onSearchTextEnter = (e) => {
@@ -128,7 +156,7 @@ function MoviesPortal() {
               <>Recommended Movies</>
             )}
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 px-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 px-4">
             {movies.map((movie) => (
               <MovieDetails key={movie.imdbID} movie={movie} />
             ))}
