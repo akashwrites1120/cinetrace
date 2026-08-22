@@ -100,18 +100,22 @@ function MoviesPortal({ isInWatchlist, onToggleWatchlist }) {
   const [movies, setMovies] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [exhausted, setExhausted] = useState(false);
   const inputRef = useRef(null);
   const resultsRef = useRef(null);
+  const usedGenresRef = useRef(new Set());
 
   useEffect(() => {
     let cancelled = false;
     const genres = shuffle(SEED_GENRES).slice(0, 5);
+    genres.forEach((genre) => usedGenresRef.current.add(genre));
     let collected = [];
     let completed = 0;
 
     const finish = () => {
       if (cancelled) return;
-      const unique = shuffle(dedupe(collected));
+      const unique = shuffle(dedupe(collected)).slice(0, 12);
       setMovies(unique);
       setLoading(false);
       if (unique.length === 0) setError("Could not load recommendations.");
@@ -128,7 +132,7 @@ function MoviesPortal({ isInWatchlist, onToggleWatchlist }) {
           completed += 1;
           if (completed === genres.length) finish();
         },
-        2
+        3
       );
     });
 
@@ -196,6 +200,46 @@ function MoviesPortal({ isInWatchlist, onToggleWatchlist }) {
   const handleSurprise = () => {
     const pool = SURPRISE_TERMS.filter((t) => t !== enteredSearchText);
     performSearch(pool[Math.floor(Math.random() * pool.length)]);
+  };
+
+  const handleViewMore = () => {
+    if (loadingMore || enteredSearchText) return;
+    setLoadingMore(true);
+
+    const pool = SEED_GENRES.filter((g) => !usedGenresRef.current.has(g));
+    const genres = shuffle(pool.length > 0 ? pool : SEED_GENRES).slice(0, 4);
+    genres.forEach((genre) => usedGenresRef.current.add(genre));
+
+    let collected = [];
+    let completed = 0;
+
+    const finish = () => {
+      const existingIds = new Set(movies.map((m) => m.imdbID));
+      const fresh = shuffle(dedupe(collected)).filter(
+        (m) => !existingIds.has(m.imdbID)
+      );
+      if (fresh.length === 0) {
+        setExhausted(true);
+      } else {
+        setMovies([...movies, ...fresh]);
+      }
+      setLoadingMore(false);
+    };
+
+    genres.forEach((genre) => {
+      fetchMovies(
+        genre,
+        (data) => {
+          collected = [...collected, ...data];
+        },
+        () => {},
+        () => {
+          completed += 1;
+          if (completed === genres.length) finish();
+        },
+        3
+      );
+    });
   };
 
   const clearInput = () => {
@@ -345,6 +389,23 @@ function MoviesPortal({ isInWatchlist, onToggleWatchlist }) {
                 />
               ))}
             </div>
+            {!enteredSearchText && !exhausted && (
+              <div className="flex justify-center pt-10">
+                <button
+                  type="button"
+                  onClick={handleViewMore}
+                  disabled={loadingMore}
+                  className="cursor-pointer rounded-full border border-border bg-surface px-8 py-3 text-sm font-medium text-text transition-all duration-200 hover:border-accent/60 hover:text-accent disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {loadingMore ? "Loading more…" : "View more"}
+                </button>
+              </div>
+            )}
+            {!enteredSearchText && exhausted && (
+              <p className="pt-10 text-center text-sm text-text-secondary">
+                That's every trace we have for now.
+              </p>
+            )}
           </>
         )}
 
