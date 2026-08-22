@@ -1,19 +1,25 @@
 # CineTrace
 
-CineTrace is a modern, movie discovery application built with React and Vite. It allows users to search for movies, view details, and explore trending titles with a sleek, responsive interface.
+CineTrace is a movie discovery application built with React and Vite. Search for movies, dig into ratings and full plots, explore ranked essentials, and keep a personal watchlist — all in a fast, minimalist interface.
+
+> Every film leaves a trace.
 
 ## Features
 
-- **Search Movies**: Find movies by title using the OMDb API.
-- **Trending Movies**: Discover popular movies in the "Trending" tab.
-- **Premium UI**: A dark-themed, glassmorphic design with smooth animations and responsive grid layout.
+- **Search Movies**: Find movies by title, actor, or genre via the OMDb API.
+- **Movie Details Modal**: Click any poster to view the full plot, IMDb score, genre chips, cast/crew, and rating bars for IMDb, Rotten Tomatoes, and Metacritic.
+- **Trending Essentials**: A curated, ranked list of twelve defining films.
+- **Persistent Watchlist**: Tap the heart on any film to save it. Stored in `localStorage`, so your list survives refreshes. Includes a dedicated tab with a live count badge.
+- **Keyboard Shortcut**: Press `/` anywhere to jump straight into search.
+- **Surprise Me**: One click digs up a random theme — heists, samurai films, time travel, and more.
+- **Curated Home Feed**: Fresh genre-blended recommendations on every visit.
+- **Minimalist UI**: Noir-inspired dark theme with a single amber accent, editorial serif headlines (Fraunces), staggered entrance animations, hover effects, shimmer skeleton loaders, and smooth tab transitions.
 - **Responsive**: Optimized for desktop, tablet, and mobile devices.
-- **Interactive**: Hover effects, loading states, and seamless navigation.
 
 ## Tech Stack
 
-- **Frontend**: React, Vite
-- **Styling**: Vanilla CSS (Custom Properties, Flexbox, Grid)
+- **Frontend**: React 19, Vite
+- **Styling**: Tailwind CSS v4 (custom design tokens, keyframe animations)
 - **API**: OMDb API
 - **Deployment**: Vercel (Ready)
 
