@@ -1,30 +1,66 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "./components/Header";
 import MoviesPortal from "./components/MoviesPortal";
 import TrendingMovies from "./components/TrendingMovies";
+import WatchlistView from "./components/WatchlistView";
+import useWatchlist from "./hooks/useWatchlist";
 
 const App = () => {
   const [activeTab, setActiveTab] = useState("home");
+  const watchlist = useWatchlist();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [activeTab]);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header activeTab={activeTab} setActiveTab={setActiveTab} />
+    <div className="flex min-h-screen flex-col">
+      <Header
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        watchlistCount={watchlist.items.length}
+      />
+
       <main className="container flex-1">
-        {activeTab === "home" && <MoviesPortal />}
-        {activeTab === "trending" && <TrendingMovies />}
+        <div key={activeTab} className="animate-fade-in">
+          {activeTab === "home" && (
+            <MoviesPortal
+              isInWatchlist={watchlist.has}
+              onToggleWatchlist={watchlist.toggle}
+            />
+          )}
+          {activeTab === "trending" && (
+            <TrendingMovies
+              isInWatchlist={watchlist.has}
+              onToggleWatchlist={watchlist.toggle}
+            />
+          )}
+          {activeTab === "watchlist" && (
+            <WatchlistView
+              items={watchlist.items}
+              isInWatchlist={watchlist.has}
+              onToggleWatchlist={watchlist.toggle}
+              onBrowse={() => setActiveTab("home")}
+            />
+          )}
+        </div>
       </main>
-      <footer className="text-center p-8 text-text-secondary border-t border-border mt-auto">
-        <p>
-          &copy; {new Date().getFullYear()} CineTrace.{" "}
+
+      <footer className="mt-auto border-t border-border">
+        <div className="container flex flex-col items-center justify-between gap-3 py-8 text-sm text-text-secondary sm:flex-row">
+          <p>
+            &copy; {new Date().getFullYear()} CineTrace — every film leaves a
+            trace.
+          </p>
           <a
             href="https://github.com/akashwrites1120/cinetrace"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-primary no-underline hover:text-primary-hover"
+            className="transition-colors duration-200 hover:text-accent"
           >
-            Github
+            GitHub ↗
           </a>
-        </p>
+        </div>
       </footer>
     </div>
   );

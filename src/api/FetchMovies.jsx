@@ -2,7 +2,8 @@ export const fetchMovies = async (
   searchText,
   moviesCallback,
   errorCallback,
-  finallyCallback
+  finallyCallback,
+  limit
 ) => {
   try {
     const response = await fetch(
@@ -13,18 +14,28 @@ export const fetchMovies = async (
     const data = await response.json();
 
     if (data.Response === "True") {
-      const movieDetailsPromises = data.Search.map((movie) =>
+      const selected =
+        limit > 0
+          ? [...data.Search].sort(() => Math.random() - 0.5).slice(0, limit)
+          : data.Search;
+      const movieDetailsPromises = selected.map((movie) =>
         fetchMovieDetails(movie.imdbID, errorCallback)
       );
       const movieDetails = await Promise.all(movieDetailsPromises);
+      const validDetails = movieDetails.filter(Boolean);
 
-      moviesCallback(movieDetails);
-      errorCallback(null);
+      if (validDetails.length > 0) {
+        moviesCallback(validDetails);
+        errorCallback(null);
+      } else {
+        moviesCallback([]);
+        errorCallback("An error occurred while fetching movie details.");
+      }
     } else {
       moviesCallback([]);
       errorCallback(data.Error);
     }
-  } catch (err) {
+  } catch {
     moviesCallback([]);
     errorCallback("An error occurred while fetching data.");
   } finally {
@@ -59,7 +70,7 @@ export const fetchTrendingMovies = async (
     const movieDetails = await Promise.all(movieDetailsPromises);
     const validMovies = movieDetails.filter((m) => m && m.Response === "True");
     moviesCallback(validMovies);
-  } catch (err) {
+  } catch {
     if (errorCallback)
       errorCallback("An error occurred while fetching trending movies.");
   } finally {
@@ -81,7 +92,7 @@ export const fetchMovieDetails = async (id, errorCallback) => {
     } else {
       throw new Error(data.Error);
     }
-  } catch (err) {
+  } catch {
     if (errorCallback)
       errorCallback("An error occurred while fetching movie details.");
     return null;

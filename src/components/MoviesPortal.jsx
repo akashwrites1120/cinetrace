@@ -1,221 +1,367 @@
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { fetchMovies } from "../api/FetchMovies";
 import ErrorAlert from "./ErrorAlert";
 import MovieDetails from "./MovieDetails";
+import SkeletonCard from "./SkeletonCard";
 
-function MoviesPortal() {
+const POPULAR_TAGS = [
+  "Action",
+  "Comedy",
+  "Drama",
+  "Romance",
+  "Thriller",
+  "Horror",
+  "Sci-Fi",
+  "Adventure",
+];
+
+const SEED_GENRES = [
+  "Action",
+  "Comedy",
+  "Drama",
+  "Thriller",
+  "Adventure",
+  "Animation",
+  "Romance",
+  "Horror",
+];
+
+const SURPRISE_TERMS = [
+  "time travel",
+  "space",
+  "heist",
+  "detective",
+  "dystopia",
+  "revenge",
+  "cyberpunk",
+  "spy",
+  "samurai",
+  "wizard",
+  "pirate",
+  "road trip",
+  "artificial intelligence",
+  "vampire",
+  "mafia",
+  "survival",
+  "jazz",
+  "chess",
+];
+
+const shuffle = (list) => [...list].sort(() => Math.random() - 0.5);
+
+const dedupe = (list) =>
+  Array.from(new Map(list.filter(Boolean).map((m) => [m.imdbID, m])).values());
+
+const SearchIcon = () => (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+);
+
+const CloseIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
+const DiceIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="3" y="3" width="18" height="18" rx="4" />
+    <circle cx="8.5" cy="8.5" r="1" fill="currentColor" stroke="none" />
+    <circle cx="15.5" cy="15.5" r="1" fill="currentColor" stroke="none" />
+    <circle cx="15.5" cy="8.5" r="1" fill="currentColor" stroke="none" />
+    <circle cx="8.5" cy="15.5" r="1" fill="currentColor" stroke="none" />
+  </svg>
+);
+
+const ClapperIcon = () => (
+  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1-.3 2.1.3 2.4 1.4Z" />
+    <path d="m6.2 5.3 3.1 3.9M12.4 3.4l3.1 4" />
+    <path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
+  </svg>
+);
+
+function MoviesPortal({ isInWatchlist, onToggleWatchlist }) {
   const [searchInputText, setSearchInputText] = useState("");
   const [enteredSearchText, setEnteredSearchText] = useState("");
-  const [movies, setMovies] = useState(null); // null = not loaded yet, [] = no results
+  const [movies, setMovies] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const inputRef = useRef(null);
+  const resultsRef = useRef(null);
 
   useEffect(() => {
-    // Fetch multiple different movies on initial load
-    const searchTerms = [
-      "Action",
-      "Comedy",
-      "Drama",
-      "Thriller",
-      "Adventure",
-      "Animation",
-      "Romance",
-      "Horror",
-    ];
+    let cancelled = false;
+    const genres = shuffle(SEED_GENRES).slice(0, 5);
+    let collected = [];
+    let completed = 0;
 
-    setLoading(true);
-    let allMovies = [];
-    let completedRequests = 0;
-    let hasError = false;
+    const finish = () => {
+      if (cancelled) return;
+      const unique = shuffle(dedupe(collected));
+      setMovies(unique);
+      setLoading(false);
+      if (unique.length === 0) setError("Could not load recommendations.");
+    };
 
-    // Shuffle and pick 4-5 random genres
-    const shuffledTerms = searchTerms.sort(() => Math.random() - 0.5);
-    const selectedTerms = shuffledTerms.slice(0, 5);
-
-    selectedTerms.forEach((term) => {
+    genres.forEach((genre) => {
       fetchMovies(
-        term,
+        genre,
         (data) => {
-          // Get 2 random movies from each search result
-          const randomMovies = data.sort(() => Math.random() - 0.5).slice(0, 2);
-          allMovies = [...allMovies, ...randomMovies];
-          completedRequests++;
-
-          if (completedRequests === selectedTerms.length) {
-            // Remove duplicates based on imdbID and shuffle
-            const uniqueMovies = Array.from(
-              new Map(allMovies.map((movie) => [movie.imdbID, movie])).values()
-            ).sort(() => Math.random() - 0.5);
-
-            setMovies(uniqueMovies);
-            setLoading(false);
-          }
+          if (!cancelled) collected = [...collected, ...data];
         },
-        (err) => {
-          if (!hasError) {
-            hasError = true;
-            setError(err);
-            setLoading(false);
-          }
+        () => {},
+        () => {
+          completed += 1;
+          if (completed === genres.length) finish();
         },
-        () => {}
+        2
       );
     });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const onSearchTextEnter = (e) => {
-    e.preventDefault();
-    if (!searchInputText.trim()) return;
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      const tag = document.activeElement && document.activeElement.tagName;
+      if (e.key === "/" && tag !== "INPUT" && tag !== "TEXTAREA") {
+        e.preventDefault();
+        inputRef.current && inputRef.current.focus();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
+  const revealResults = () => {
+    window.setTimeout(() => {
+      if (resultsRef.current) {
+        resultsRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    }, 120);
+  };
+
+  const performSearch = (term) => {
+    setSearchInputText(term);
+    setEnteredSearchText(term);
     setLoading(true);
     setMovies(null);
     setError(null);
 
     fetchMovies(
-      searchInputText,
+      term,
       (data) => {
         setMovies(data);
         setLoading(false);
+        revealResults();
       },
       (err) => {
-        setError(err);
+        if (err) setError(err);
         setLoading(false);
       },
-      () => {
-        setEnteredSearchText(searchInputText);
-        setLoading(false);
-      }
+      null
     );
+  };
+
+  const onSubmit = (e) => {
+    e.preventDefault();
+    const term = searchInputText.trim();
+    if (term) performSearch(term);
   };
 
   const handleTagClick = (tag) => {
-    setSearchInputText(tag);
-    setEnteredSearchText(tag);
-    setLoading(true);
-    setMovies(null);
-    setError(null);
-
-    fetchMovies(
-      tag,
-      (data) => {
-        setMovies(data);
-        setLoading(false);
-      },
-      (err) => {
-        setError(err);
-        setLoading(false);
-      },
-      () => {
-        setLoading(false);
-      }
-    );
+    if (tag === enteredSearchText) return;
+    performSearch(tag);
   };
 
-  const popularTags = [
-    "Action",
-    "Comedy",
-    "Drama",
-    "Romance",
-    "Thriller",
-    "Horror",
-    "Sci-Fi",
-    "Adventure",
-  ];
+  const handleSurprise = () => {
+    const pool = SURPRISE_TERMS.filter((t) => t !== enteredSearchText);
+    performSearch(pool[Math.floor(Math.random() * pool.length)]);
+  };
+
+  const clearInput = () => {
+    setSearchInputText("");
+    if (inputRef.current) inputRef.current.focus();
+  };
 
   return (
-    <div className="min-h-[80vh] pb-16">
-      <div className="text-center py-8 sm:py-12 max-w-2xl mx-auto px-4">
-        <h1 className="mb-4 sm:mb-6 text-3xl sm:text-4xl font-bold">
-          Find Your Next Favorite Movie
+    <div className="pb-20">
+      <section className="mx-auto max-w-3xl px-1 pt-14 pb-2 text-center sm:pt-20">
+        <p className="eyebrow animate-fade-up">Discover · Search · Save</p>
+
+        <h1
+          className="animate-fade-up mt-5 font-display text-4xl leading-[1.08] font-medium tracking-tight text-balance sm:text-6xl"
+          style={{ animationDelay: "90ms" }}
+        >
+          Every film leaves a{" "}
+          <span className="font-light italic text-accent">trace</span>.
         </h1>
-        <div>
-          <div className="relative mb-4">
-            <input
-              type="text"
-              placeholder="Search for movies..."
-              className="w-full px-4 py-3 pl-12 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              value={searchInputText}
-              onChange={(e) => setSearchInputText(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === "Enter") {
-                  onSearchTextEnter(e);
-                }
-              }}
-            />
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+
+        <p
+          className="animate-fade-up mx-auto mt-5 max-w-xl text-base text-text-secondary sm:text-lg"
+          style={{ animationDelay: "180ms" }}
+        >
+          Dig up plots, ratings and hidden gems — then keep what you love on
+          your watchlist.
+        </p>
+
+        <form
+          onSubmit={onSubmit}
+          className="animate-fade-up relative mx-auto mt-9 max-w-xl"
+          style={{ animationDelay: "270ms" }}
+          role="search"
+        >
+          <span className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-text-secondary">
+            <SearchIcon />
+          </span>
+          <input
+            ref={inputRef}
+            type="text"
+            placeholder="Search films, people, genres…"
+            value={searchInputText}
+            onChange={(e) => setSearchInputText(e.target.value)}
+            className="h-[54px] w-full rounded-full border border-border bg-surface pr-14 pl-12 text-[15px] outline-none transition-all duration-300 placeholder:text-text-secondary/60 focus:border-accent/60 focus:bg-elevated focus:shadow-[0_0_0_4px_rgba(245,197,24,0.08)]"
+          />
+          {searchInputText ? (
+            <button
+              type="button"
+              onClick={clearInput}
+              aria-label="Clear search"
+              className="absolute right-4 top-1/2 grid h-7 w-7 -translate-y-1/2 cursor-pointer place-items-center rounded-full text-text-secondary transition-colors duration-200 hover:bg-elevated hover:text-text"
             >
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-          </div>
+              <CloseIcon />
+            </button>
+          ) : (
+            <kbd className="kbd pointer-events-none absolute right-5 top-1/2 hidden -translate-y-1/2 sm:block">
+              /
+            </kbd>
+          )}
+        </form>
 
-          {/* Popular Tags */}
-          <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
-            <div className="flex flex-nowrap sm:flex-wrap gap-2 justify-start sm:justify-center min-w-max sm:min-w-0">
-              {popularTags.map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => handleTagClick(tag)}
-                  className="px-4 py-1.5 text-sm bg-gray-800/50 hover:bg-indigo-500/20 border border-gray-700 hover:border-indigo-500 rounded-full text-gray-300 hover:text-indigo-400 transition-all duration-200 whitespace-nowrap"
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-          </div>
+        <div
+          className="animate-fade-up mt-5 flex items-center justify-center gap-5 text-xs text-text-secondary"
+          style={{ animationDelay: "360ms" }}
+        >
+          <button
+            type="button"
+            onClick={handleSurprise}
+            className="group inline-flex cursor-pointer items-center gap-1.5 transition-colors duration-200 hover:text-accent"
+          >
+            <DiceIcon />
+            <span className="transition-transform duration-200 group-hover:underline group-hover:decoration-accent/60 group-hover:underline-offset-4">
+              Surprise me
+            </span>
+          </button>
+          <span className="hidden items-center gap-1.5 sm:flex">
+            Press <kbd className="kbd">/</kbd> anywhere to search
+          </span>
         </div>
-      </div>
 
-      {loading && (
-        <div className="text-center py-16 flex justify-center">
-          <div className="w-12 h-12 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
-        </div>
-      )}
-
-      {!loading && error && (
-        <ErrorAlert
-          error={error}
-          searchTerm={enteredSearchText || "Random Selection"}
-        />
-      )}
-
-      {!loading && movies && movies.length > 0 && (
-        <>
-          <p className="text-gray-400 mb-6 px-4">
-            {enteredSearchText ? (
-              <>
-                Found {movies.length} results for{" "}
-                <span className="text-white font-semibold">
-                  "{enteredSearchText}"
-                </span>
-              </>
-            ) : (
-              <>Recommended Movies</>
-            )}
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 px-4">
-            {movies.map((movie) => (
-              <MovieDetails key={movie.imdbID} movie={movie} />
+        <div
+          className="animate-fade-up mt-8 overflow-x-auto scrollbar-hide"
+          style={{ animationDelay: "450ms" }}
+        >
+          <div className="flex min-w-max flex-wrap justify-center gap-2 px-4 sm:min-w-0 sm:px-0">
+            {POPULAR_TAGS.map((tag) => (
+              <button
+                key={tag}
+                onClick={() => handleTagClick(tag)}
+                className={`tag-pill ${
+                  enteredSearchText === tag ? "tag-pill-active" : ""
+                }`}
+              >
+                {tag}
+              </button>
             ))}
           </div>
-        </>
-      )}
-
-      {!loading && movies && movies.length === 0 && !error && (
-        <div className="text-center text-gray-400 mt-16">
-          <p>No movies found. Try searching for something else.</p>
         </div>
-      )}
+      </section>
+
+      <section ref={resultsRef} className="scroll-mt-24">
+        {loading && (
+          <>
+            <div className="skeleton mx-auto mb-2 h-4 w-44 rounded-md" />
+            <div className="movie-grid pt-4">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <SkeletonCard key={i} />
+              ))}
+            </div>
+          </>
+        )}
+
+        {!loading && error && (
+          <ErrorAlert error={error} searchTerm={enteredSearchText || "random picks"} />
+        )}
+
+        {!loading && !error && movies && movies.length > 0 && (
+          <>
+            <div className="border-t border-border pt-7">
+              <p className="animate-fade-up text-sm text-text-secondary">
+                {enteredSearchText ? (
+                  <>
+                    Found <span className="font-semibold text-text tabular-nums">{movies.length}</span>{" "}
+                    films for{" "}
+                    <span className="font-display text-base italic text-accent">
+                      “{enteredSearchText}”
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    Curated picks for tonight,{" "}
+                    <span className="font-display text-base italic text-text">
+                      fresh every visit
+                    </span>
+                  </>
+                )}
+              </p>
+            </div>
+            <div className="movie-grid pt-6">
+              {movies.map((movie, i) => (
+                <MovieDetails
+                  key={movie.imdbID}
+                  movie={movie}
+                  index={i}
+                  isInWatchlist={isInWatchlist}
+                  onToggleWatchlist={onToggleWatchlist}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
+        {!loading && !error && movies && movies.length === 0 && (
+          <div className="animate-fade-up py-24 text-center">
+            <span className="inline-block text-text-secondary/50">
+              <ClapperIcon />
+            </span>
+            <p className="mt-5 font-display text-xl italic">
+              No traces found for “{enteredSearchText}”.
+            </p>
+            <p className="mt-2 text-sm text-text-secondary">
+              Check the spelling or try a broader term.
+            </p>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
