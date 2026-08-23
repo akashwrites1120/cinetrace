@@ -74,7 +74,7 @@ export const fetchTrendingMovies = async (
   errorCallback,
   finallyCallback
 ) => {
-  const trendingIds = [
+  const FALLBACK_TRENDING_IDS = [
     "tt15398776", // Oppenheimer
     "tt1517268", // Barbie
     "tt1160419", // Dune
@@ -89,16 +89,75 @@ export const fetchTrendingMovies = async (
     "tt0133093", // The Matrix
   ];
 
-  try {
-    const movieDetailsPromises = trendingIds.map((id) =>
-      fetchMovieDetails(id, errorCallback)
+  const fetchTrendingFromIds = async (ids, moviesCb, errorCb) => {
+    try {
+      const movieDetailsPromises = ids.map((id) =>
+        fetchMovieDetails(id, null)
+      );
+      const movieDetails = await Promise.all(movieDetailsPromises);
+      const validMovies = movieDetails.filter(
+        (m) => m && m.Response === "True"
+      );
+      moviesCb(validMovies);
+    } catch {
+      if (errorCb)
+        errorCb("An error occurred while fetching trending movies.");
+    }
+  };
+
+  const tmdbKey = import.meta.env.VITE_TMDB_API_KEY;
+
+  if (!tmdbKey) {
+    console.warn(
+      "VITE_TMDB_API_KEY is not set — falling back to curated trending list."
     );
-    const movieDetails = await Promise.all(movieDetailsPromises);
-    const validMovies = movieDetails.filter((m) => m && m.Response === "True");
-    moviesCallback(validMovies);
+    await fetchTrendingFromIds(FALLBACK_TRENDING_IDS, moviesCallback, errorCallback);
+    if (finallyCallback) finallyCallback();
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.themoviedb.org/3/trending/movie/week?api_key=${tmdbKey}`
+    );
+    const data = await response.json();
+
+    if (!data.results || data.results.length === 0) {
+      throw new Error("No trending movies returned.");
+    }
+
+    const top = data.results.slice(0, 12);
+
+    const imdbIdPromises = top.map(async (movie) => {
+      const detailsResponse = await fetch(
+        `https://api.themoviedb.org/3/movie/${movie.id}?api_key=${tmdbKey}&append_to_response=external_ids`
+      );
+      const details = await detailsResponse.json();
+      return details && details.external_ids ? details.external_ids.imdb_id : null;
+    });
+
+    const imdbIds = (await Promise.all(imdbIdPromises)).filter(Boolean);
+
+    if (imdbIds.length === 0) {
+      throw new Error("Could not map trending movies to IMDb.");
+    }
+
+    const movieDetails = await Promise.all(
+      imdbIds.map((id) => fetchMovieDetails(id, null))
+    );
+    const order = new Map(imdbIds.map((id, i) => [id, i]));
+    const validMovies = movieDetails
+      .filter((m) => m && m.Response === "True")
+      .sort((a, b) => order.get(a.imdbID) - order.get(b.imdbID));
+
+    if (validMovies.length > 0) {
+      moviesCallback(validMovies);
+    } else {
+      throw new Error("An error occurred while fetching trending movies.");
+    }
   } catch {
-    if (errorCallback)
-      errorCallback("An error occurred while fetching trending movies.");
+    console.warn("TMDB trending failed — falling back to curated list.");
+    await fetchTrendingFromIds(FALLBACK_TRENDING_IDS, moviesCallback, errorCallback);
   } finally {
     if (finallyCallback) finallyCallback();
   }
