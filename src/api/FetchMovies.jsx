@@ -43,6 +43,32 @@ export const fetchMovies = async (
   }
 };
 
+export const fetchMoviesPage = async (searchText, page, errorCallback) => {
+  try {
+    const response = await fetch(
+      `https://www.omdbapi.com/?s=${encodeURIComponent(searchText)}&page=${page}&apikey=${
+        import.meta.env.VITE_OMDB_API_KEY
+      }&type=movie`
+    );
+    const data = await response.json();
+
+    if (data.Response === "True") {
+      const movieDetailsPromises = data.Search.map((movie) =>
+        fetchMovieDetails(movie.imdbID)
+      );
+      const movieDetails = await Promise.all(movieDetailsPromises);
+      return {
+        movies: movieDetails.filter(Boolean),
+        totalResults: Number(data.totalResults) || 0,
+      };
+    }
+    return { movies: [], totalResults: 0 };
+  } catch {
+    if (errorCallback) errorCallback("An error occurred while fetching data.");
+    return { movies: [], totalResults: 0 };
+  }
+};
+
 export const fetchTrendingMovies = async (
   moviesCallback,
   errorCallback,

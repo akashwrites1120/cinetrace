@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { fetchMovies } from "../api/FetchMovies";
+import { fetchMovies, fetchMoviesPage } from "../api/FetchMovies";
 import ErrorAlert from "./ErrorAlert";
 import MovieDetails from "./MovieDetails";
 import SkeletonCard from "./SkeletonCard";
@@ -105,6 +105,10 @@ function MoviesPortal({ isInWatchlist, onToggleWatchlist }) {
   const inputRef = useRef(null);
   const resultsRef = useRef(null);
   const usedGenresRef = useRef(new Set());
+  const nextPageRef = useRef(3);
+  const totalResultsRef = useRef(0);
+  const seenIdsRef = useRef(new Set());
+  const requestIdRef = useRef(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -170,20 +174,40 @@ function MoviesPortal({ isInWatchlist, onToggleWatchlist }) {
     setLoading(true);
     setMovies(null);
     setError(null);
+    setExhausted(false);
 
-    fetchMovies(
-      term,
-      (data) => {
-        setMovies(data);
+    const requestId = ++requestIdRef.current;
+    seenIdsRef.current = new Set();
+    totalResultsRef.current = 0;
+    nextPageRef.current = 3;
+    let fetchError = null;
+
+    Promise.all([
+      fetchMoviesPage(term, 1, (err) => {
+        fetchError = err;
+      }),
+      fetchMoviesPage(term, 2),
+    ]).then(([firstPage, secondPage]) => {
+      if (requestId !== requestIdRef.current) return;
+
+      const unique = dedupe([...firstPage.movies, ...secondPage.movies]).slice(
+        0,
+        12
+      );
+      unique.forEach((m) => seenIdsRef.current.add(m.imdbID));
+      totalResultsRef.current =
+        firstPage.totalResults || secondPage.totalResults || unique.length;
+
+      if (unique.length === 0) {
+        setError(fetchError || "Could not find films for this search.");
+        setLoading(false);
+      } else {
+        if (unique.length >= totalResultsRef.current) setExhausted(true);
+        setMovies(unique);
         setLoading(false);
         revealResults();
-      },
-      (err) => {
-        if (err) setError(err);
-        setLoading(false);
-      },
-      null
-    );
+      }
+    });
   };
 
   const onSubmit = (e) => {
@@ -203,7 +227,38 @@ function MoviesPortal({ isInWatchlist, onToggleWatchlist }) {
   };
 
   const handleViewMore = () => {
-    if (loadingMore || enteredSearchText) return;
+    if (loadingMore || exhausted) return;
+
+    if (enteredSearchText) {
+      setLoadingMore(true);
+      const term = enteredSearchText;
+      const requestId = requestIdRef.current;
+      const pages = [nextPageRef.current, nextPageRef.current + 1];
+      nextPageRef.current += 2;
+
+      Promise.all(pages.map((page) => fetchMoviesPage(term, page))).then(
+        ([a, b]) => {
+          if (requestId !== requestIdRef.current) return;
+
+          const fresh = dedupe([...a.movies, ...b.movies]).filter(
+            (m) => !seenIdsRef.current.has(m.imdbID)
+          );
+          fresh.forEach((m) => seenIdsRef.current.add(m.imdbID));
+
+          if (
+            fresh.length === 0 ||
+            seenIdsRef.current.size >= totalResultsRef.current
+          ) {
+            setExhausted(true);
+          } else {
+            setMovies((prev) => [...(prev || []), ...fresh]);
+          }
+          setLoadingMore(false);
+        }
+      );
+      return;
+    }
+
     setLoadingMore(true);
 
     const pool = SEED_GENRES.filter((g) => !usedGenresRef.current.has(g));
@@ -389,7 +444,7 @@ function MoviesPortal({ isInWatchlist, onToggleWatchlist }) {
                 />
               ))}
             </div>
-            {!enteredSearchText && !exhausted && (
+            {!exhausted && (
               <div className="flex justify-center pt-10">
                 <button
                   type="button"
@@ -401,7 +456,7 @@ function MoviesPortal({ isInWatchlist, onToggleWatchlist }) {
                 </button>
               </div>
             )}
-            {!enteredSearchText && exhausted && (
+            {exhausted && (
               <p className="pt-10 text-center text-sm text-text-secondary">
                 That's every trace we have for now.
               </p>
